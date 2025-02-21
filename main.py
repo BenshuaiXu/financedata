@@ -4,7 +4,6 @@ import pandas as pd
 from datetime import datetime, timedelta
 from datastore import companies_by_index
 
-
 # Streamlit app
 st.title("Historical Stock Data Downloader")
 
@@ -12,7 +11,7 @@ st.title("Historical Stock Data Downloader")
 selected_index = st.selectbox("Select Index", list(companies_by_index.keys()))
 
 # Slider to select number of years
-years = st.slider("Select number of years", min_value=1, max_value=10, value=6)
+years = st.slider("Select number of years", min_value=1, max_value=6, value=6)
 
 # Get the tickers for the selected index
 tickers = list(companies_by_index[selected_index].values())
@@ -26,18 +25,25 @@ def download_historical_data(tickers, years):
 
     for ticker in tickers:
         stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False)
-        stock_data = stock_data[['Close']].round(2)  # Keep only 'Close' price and round to 2 decimal places
-        stock_data.columns = [ticker]  # Rename the column to the ticker symbol
-        data = pd.concat([data, stock_data], axis=1)
+        if not stock_data.empty:  # Only add data if it's not empty
+            stock_data = stock_data[['Close']].round(2)  # Keep only 'Close' price and round to 2 decimal places
+            stock_data.columns = [ticker]  # Rename the column to the ticker symbol
+            data = pd.concat([data, stock_data], axis=1)
 
+    # Drop columns with all NaN values
+    data = data.dropna(axis=1, how='all')
+    
     return data
 
 # Download historical data
 if st.button("Download Historical Data"):
     with st.spinner("Downloading data..."):
         historical_data = download_historical_data(tickers, years)
-        historical_data.to_csv(f"{selected_index}_historical_data.csv")
-        st.success("Data downloaded successfully!")
+        if not historical_data.empty:
+            historical_data.to_csv(f"{selected_index}_historical_data.csv")
+            st.success("Data downloaded successfully!")
+        else:
+            st.error("No data available for the selected index and time period.")
 
 # Display the data
 if st.checkbox("Show historical data"):
