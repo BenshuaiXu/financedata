@@ -4,7 +4,6 @@ import pandas as pd
 from datetime import datetime, timedelta
 from datastore import companies_by_index
 
-# Streamlit app
 st.title("Historical Stock Data Downloader")
 
 # Dropdown to select index
@@ -18,6 +17,10 @@ selected_stock = st.selectbox("Select a Stock for Intraday Data", tickers)
 
 # Slider to select number of years for historical data
 years = st.slider("Select number of years", min_value=1, max_value=6, value=6)
+
+# New inputs for intraday data: number of days and interval
+intraday_days = st.number_input("Select number of days for intraday data", min_value=1, max_value=30, value=25, step=1)
+intraday_interval = st.selectbox("Select intraday interval", options=["1m", "2m", "5m", "15m", "30m", "60m"], index=4)  # Default "15m"
 
 # Function to clean data by replacing outliers
 def clean_data(data):
@@ -56,87 +59,16 @@ def download_historical_data(tickers, years):
     
     return data
 
-
-# def download_intraday_data(ticker, period="30d", interval="15m"):
-#     # Download only price data, auto-adjust removes dividend/split adjustments
-
-#     data = pd.DataFrame()
-
-#     stock_data = yf.download(ticker, period=period, interval=interval, auto_adjust=True, progress=False)
-
-#     if not stock_data.empty:
-#         # Select only the 'Close' price to avoid extra metadata
-#         stock_data = stock_data[['Close']].round(2)
-
-#         # Rename the 'Close' column to the ticker symbol
-#         stock_data.columns = [ticker]
-#         data = pd.concat([data, stock_data], axis=1)
-#         # Ensure the index is a datetime index
-
-#         # Drop any rows with NaN values
-#         # Reset index if you want a clean DataFrame without DateTime index
-#         data.reset_index(inplace=True)
-
-#     return data
-
-
-def remove_weekends(data):
+# Updated function to download intraday data
+def download_intraday_data(ticker, days, interval):
     """
-    Remove weekend rows from a DataFrame whose index is datetime.
-    Only keeps rows where the day of week is less than 5 (Monday=0, Friday=4).
+    Download intraday data for a ticker using yfinance with the specified period and interval.
+    After downloading, the function:
+      - Selects only the 'Close' price and rounds it
+      - Renames the column to the ticker symbol
+      - Resets the index and renames it to 'Date'
     """
-    return data[data.index.dayofweek < 5]
-
-def remove_gaps(data):
-    """
-    Remove gaps by reindexing the data to a continuous datetime index.
-    The new index uses a 15-minute frequency, matching the original interval.
-    """
-    if data.empty:
-        return data
-    
-    # Calculate the new continuous index from the first to last timestamp
-    new_index = pd.date_range(start=data.index[0], end=data.index[-1], freq='15T')
-    
-    # Reindex the DataFrame and forward-fill missing values (or use other method as needed)
-    data_no_gaps = data.reindex(new_index).ffill()
-    return data_no_gaps
-
-# def download_intraday_data_original(ticker, period="30d", interval="15m"):
-#     """
-#     Download intraday data for a ticker using yfinance's history() method, then clean the data by:
-#       - Selecting only the 'Close' price
-#       - Renaming the column to the ticker symbol
-#       - Converting the index to a column named 'Date'
-#       - Checking if the values are doubled and issuing a warning
-#     """
-#     # Create a Ticker object
-#     stock = yf.Ticker(ticker)
-
-#     # Download price data
-#     stock_data = stock.history(period=period, interval=interval, auto_adjust=True)
-
-#     if not stock_data.empty:
-#         # Select only the 'Close' price and round values to 2 decimal places
-#         stock_data = stock_data[['Close']].round(2)
-#         stock_data = stock_data.reset_index().rename(columns={'Datetime': 'Date'})
-
-#         return stock_data
-
-#     return pd.DataFrame()
-
-
-def download_intraday_data(ticker, period="30d", interval="15m"):
-    """
-    Download intraday data for a ticker using yfinance, then clean the data by:
-      - Selecting only the 'Close' price
-      - Renaming the column to the ticker symbol
-      - Removing weekends
-      - Removing gaps (reindexing to a continuous 15-minute frequency)
-      - Dropping any remaining NaN values
-      - Converting the index to a column named 'Date'
-    """
-    # Download price data (auto_adjust removes dividend/split adjustments)
+    period = f"{days}d"  # e.g., "30d" if days=30
     stock_data = yf.download(ticker, period=period, interval=interval, auto_adjust=True, progress=False)
 
     if not stock_data.empty:
@@ -146,24 +78,11 @@ def download_intraday_data(ticker, period="30d", interval="15m"):
         # Rename the 'Close' column to the ticker symbol
         stock_data.columns = [ticker]
         
-        # Ensure the index is a datetime index (usually already the case)
-        # stock_data.index = pd.to_datetime(stock_data.index)
-        
-        # Remove weekends
-        # stock_data = remove_weekends(stock_data)
-        
-        # Remove gaps: reindex the DataFrame to a continuous datetime index
-        # stock_data = remove_gaps(stock_data)
-        
-        # Drop any rows with NaN values (if gaps couldn't be filled)
-        # stock_data.dropna(inplace=True)
-        
         # Convert index to a column named 'Date'
         stock_data.reset_index(inplace=True)
-        # stock_data.rename(columns={'index': 'Date'}, inplace=True)        
-        stock_data.rename(columns={'Datetime': 'Date'}, inplace=True)
-
-
+        # Rename the index column to 'Date' if necessary
+        if 'Datetime' in stock_data.columns:
+            stock_data.rename(columns={'Datetime': 'Date'}, inplace=True)
         
         return stock_data
 
@@ -182,7 +101,7 @@ if st.button("Download Historical Data"):
 # Download intraday data
 if st.button("Download Intraday Data"):
     with st.spinner("Downloading intraday data..."):
-        intraday_data = download_intraday_data(selected_stock)
+        intraday_data = download_intraday_data(selected_stock, intraday_days, intraday_interval)
         if not intraday_data.empty:
             intraday_data.to_csv(f"{selected_stock}_intraday_data.csv")
             st.success("Intraday data downloaded successfully!")
