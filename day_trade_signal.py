@@ -3,9 +3,8 @@ import yfinance as yf
 import pandas as pd
 from kalman import micro_stock_price_filtering_fourier_withlinear, micro_frequency_domain_filtering, remove_weekends, \
     remove_gaps
-from data_store import micro_turbo_list, micro_fine_tune_list
+from datastore import micro_turbo_list, micro_fine_tune_list, companies_by_index
 import time
-from datastore import companies_by_index
 
 
 def download_intraday_data(ticker, days, interval):
@@ -73,14 +72,16 @@ def wave_trading():
     intraday_days = 25
     intraday_interval = "30m"
 
+    companies_by_index_in_use = companies_by_index.copy()
+
     # Dropdown to select index
-    selected_index = st.selectbox("Select Index", list(companies_by_index.keys()))
+    selected_index = st.selectbox("Select Index", list(companies_by_index_in_use.keys()), key="index_page2")
 
     # Get the tickers for the selected index
-    tickers = list(companies_by_index[selected_index].values())
+    tickers = list(companies_by_index_in_use[selected_index].values())
 
     # Dropdown to select a single stock for intraday data
-    selected_stock = st.selectbox("Select a Stock for Intraday Data", tickers)
+    selected_stock = st.selectbox("Select a Stock for Intraday Data", tickers, key="stock_page2")
 
     with st.expander("Micro Adjust Settings "):
         micro_turbo = st.slider(
@@ -131,7 +132,7 @@ def wave_trading():
 
             # Loop to update data and re-run analysis every 30 minutes
             while True:
-                time.sleep(30)  # Wait for 30 minutes (1800 seconds)
+                time.sleep(1800)  # Wait for 30 minutes (1800 seconds)
 
                 # Check market status
                 ticker_info = yf.Ticker(selected_stock).info
@@ -152,7 +153,6 @@ def wave_trading():
 
                     with analysis_placeholder:
                         st.empty()  # Clear previous output
-                        # run_analysis(intraday_data, selected_stock)  # Run new analysis
                         run_analysis(intraday_data, selected_stock, micro_turbo, micro_fine_tune, micro_date_back)
 
                 else:

@@ -5,24 +5,6 @@ from datetime import datetime, timedelta
 from datastore import companies_by_index
 
 
-# st.title("Historical Stock Data Downloader")
-
-# # Dropdown to select index
-# selected_index = st.selectbox("Select Index", list(companies_by_index.keys()))
-
-# # Get the tickers for the selected index
-# tickers = list(companies_by_index[selected_index].values())
-
-# # Dropdown to select a single stock for intraday data
-# selected_stock = st.selectbox("Select a Stock for Intraday Data", tickers)
-
-# # Slider to select number of years for historical data
-# years = st.slider("Select number of years", min_value=1, max_value=6, value=6)
-
-# # New inputs for intraday data: number of days and interval
-# intraday_days = st.number_input("Select number of days for intraday data", min_value=1, max_value=30, value=25, step=1)
-# intraday_interval = st.selectbox("Select intraday interval", options=["1m", "2m", "5m", "15m", "30m", "60m"], index=4)  # Default "15m"
-
 # Function to clean data by replacing outliers
 def clean_data(data):
     for ticker in data.columns:
@@ -95,14 +77,18 @@ def download_intraday_data(ticker, days, interval):
 def finance_data_download():
     st.title("Historical Stock Data Downloader")
 
+    companies_by_index_in_use = companies_by_index.copy()
+
     # Dropdown to select index
-    selected_index = st.selectbox("Select Index", list(companies_by_index.keys()))
+    # selected_index = st.selectbox("Select Index", list(companies_by_index_in_use.keys()))
+
+    selected_index_1 = st.selectbox("Select Index", list(companies_by_index_in_use.keys()), key="index_page1")
 
     # Get the tickers for the selected index
-    tickers = list(companies_by_index[selected_index].values())
+    tickers = list(companies_by_index_in_use[selected_index_1].values())
 
     # Dropdown to select a single stock for intraday data
-    selected_stock = st.selectbox("Select a Stock for Intraday Data", tickers)
+    selected_stock_1 = st.selectbox("Select a Stock for Intraday Data", tickers, key="stock_page1")
 
     # Slider to select number of years for historical data
     years = st.slider("Select number of years", min_value=1, max_value=6, value=6)
@@ -118,7 +104,7 @@ def finance_data_download():
         with st.spinner("Downloading historical data..."):
             historical_data = download_historical_data(tickers, years)
             if not historical_data.empty:
-                historical_data.to_csv(f"{selected_index}_historical_data.csv")
+                historical_data.to_csv(f"{selected_index_1}_historical_data.csv")
                 st.success("Historical data downloaded and cleaned successfully!")
             else:
                 st.error("No historical data available for the selected index and time period.")
@@ -126,9 +112,9 @@ def finance_data_download():
     # Download intraday data
     if st.button("Download Intraday Data"):
         with st.spinner("Downloading intraday data..."):
-            intraday_data = download_intraday_data(selected_stock, intraday_days, intraday_interval)
+            intraday_data = download_intraday_data(selected_stock_1, intraday_days, intraday_interval)
             if not intraday_data.empty:
-                intraday_data.to_csv(f"{selected_stock}_intraday_data.csv")
+                intraday_data.to_csv(f"{selected_stock_1}_intraday_data.csv")
                 st.success("Intraday data downloaded successfully!")
             else:
                 st.error("No intraday data available for the selected stock.")
@@ -136,7 +122,7 @@ def finance_data_download():
     # Display historical data
     if st.checkbox("Show historical data"):
         try:
-            historical_data = pd.read_csv(f"{selected_index}_historical_data.csv", index_col=0)
+            historical_data = pd.read_csv(f"{selected_index_1}_historical_data.csv", index_col=0)
             st.write(historical_data)
         except FileNotFoundError:
             st.error("No historical data available. Please download the data first.")
@@ -144,18 +130,18 @@ def finance_data_download():
     # Display intraday data
     if st.checkbox("Show intraday data"):
         try:
-            intraday_data = pd.read_csv(f"{selected_stock}_intraday_data.csv", index_col=0)
+            intraday_data = pd.read_csv(f"{selected_stock_1}_intraday_data.csv", index_col=0)
             st.write(intraday_data)
         except FileNotFoundError:
             st.error("No intraday data available. Please download the data first.")
 
     # Allow users to download the historical CSV file
     try:
-        with open(f"{selected_index}_historical_data.csv", "rb") as file:
+        with open(f"{selected_index_1}_historical_data.csv", "rb") as file:
             st.download_button(
                 label="Download Historical CSV",
                 data=file,
-                file_name=f"{selected_index}_historical_data.csv",
+                file_name=f"{selected_index_1}_historical_data.csv",
                 mime="text/csv",
             )
     except FileNotFoundError:
@@ -163,11 +149,11 @@ def finance_data_download():
 
     # Allow users to download the intraday CSV file
     try:
-        with open(f"{selected_stock}_intraday_data.csv", "rb") as file:
+        with open(f"{selected_stock_1}_intraday_data.csv", "rb") as file:
             st.download_button(
                 label="Download Intraday CSV",
                 data=file,
-                file_name=f"{selected_stock}_intraday_data.csv",
+                file_name=f"{selected_stock_1}_intraday_data.csv",
                 mime="text/csv",
             )
     except FileNotFoundError:
