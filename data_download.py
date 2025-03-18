@@ -94,7 +94,7 @@ def finance_data_download():
     years = st.slider("Select number of years", min_value=1, max_value=6, value=6)
 
     # New inputs for intraday data: number of days and interval
-    intraday_days = st.number_input("Select number of days for intraday data", min_value=1, max_value=30, value=25,
+    intraday_days = st.number_input("Select number of days for intraday data", min_value=1, max_value=30, value=20,
                                     step=1)
     intraday_interval = st.selectbox("Select intraday interval", options=["1m", "2m", "5m", "15m", "30m", "60m"],
                                      index=4)  # Default "15m"

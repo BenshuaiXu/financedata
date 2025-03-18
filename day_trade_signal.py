@@ -69,7 +69,7 @@ def run_analysis(data, ticker_symbol, micro_turbo, micro_fine_tune, micro_date_b
 
 
 def wave_trading():
-    intraday_days = 25
+    intraday_days = 20
     intraday_interval = "30m"
 
     companies_by_index_in_use = companies_by_index.copy()
