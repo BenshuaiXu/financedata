@@ -1,6 +1,8 @@
 import streamlit as st
 from data_download import finance_data_download
 from day_trade_signal import wave_trading
+from fibonacci import fibonacci_visualization
+
 
 
 def main():

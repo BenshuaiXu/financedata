@@ -5,6 +5,7 @@ from kalman import micro_stock_price_filtering_fourier_withlinear, micro_frequen
     remove_gaps
 from datastore import micro_turbo_list, micro_fine_tune_list, companies_by_index
 import time
+from fibonacci import fibonacci_visualization
 
 
 def download_intraday_data(ticker, days, interval):
@@ -157,3 +158,6 @@ def wave_trading():
 
                 else:
                     st.error("Failed to fetch the latest price.")
+                    
+    fibonacci_visualization()
+
