@@ -11,6 +11,7 @@ def load_data(uploaded_file):
     return None
 
 
+
 # Function to remove weekends
 def remove_weekends(data):
     return data[data.index.dayofweek < 5]  # Keep only Monday-Friday
