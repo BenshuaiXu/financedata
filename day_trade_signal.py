@@ -159,5 +159,5 @@ def wave_trading():
                 else:
                     st.error("Failed to fetch the latest price.")
 
-    fibonacci_visualization()
+        fibonacci_visualization()
 
