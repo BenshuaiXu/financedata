@@ -8,7 +8,7 @@ from fibonacci import fibonacci_visualization
 def main():
     # Sidebar with navigation
     st.sidebar.title("Navigation")
-    selection = st.sidebar.radio("Go to", ["Welcome", "Data Download", "Wave Tracking"])
+    selection = st.sidebar.radio("Go to", ["Welcome", "Data Download", "Wave Tracking", "Fibonacci"])
 
     if selection == "Welcome":
         show_welcome_page()
@@ -16,6 +16,9 @@ def main():
         finance_data_download()
     elif selection == "Wave Tracking":
         wave_trading()
+    elif selection == "Fibonacci":
+        fibonacci_visualization
+
 
 
 def show_welcome_page():
