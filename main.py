@@ -17,7 +17,7 @@ def main():
     elif selection == "Wave Tracking":
         wave_trading()
     elif selection == "Fibonacci":
-        fibonacci_visualization
+        fibonacci_visualization()
 
 
 

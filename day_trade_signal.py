@@ -5,8 +5,6 @@ from kalman import micro_stock_price_filtering_fourier_withlinear, micro_frequen
     remove_gaps
 from datastore import micro_turbo_list, micro_fine_tune_list, companies_by_index
 import time
-from fibonacci import fibonacci_visualization
-
 
 def download_intraday_data(ticker, days, interval):
     """
@@ -117,6 +115,7 @@ def wave_trading():
     else:
         st.error("CSV must contain 'Date' and ticker symbol columns.")
 
+
     if intraday_data is not None:
         if intraday_data.empty:
             st.error("No data found for the given ticker and period.")
@@ -125,11 +124,11 @@ def wave_trading():
             intraday_data = remove_weekends(intraday_data)
 
             # Create a placeholder to clear previous results
-            analysis_placeholder = st.empty()
+            analysis_placeholder = st.empty()     
 
-            # Initial analysis
+            # Initial analysis            
             with analysis_placeholder:
-                run_analysis(intraday_data, selected_stock, micro_turbo, micro_fine_tune, micro_date_back)
+                run_analysis(intraday_data, selected_stock, micro_turbo, micro_fine_tune, micro_date_back)                
 
             # Loop to update data and re-run analysis every 30 minutes
             while True:
@@ -159,5 +158,8 @@ def wave_trading():
                 else:
                     st.error("Failed to fetch the latest price.")
 
-        fibonacci_visualization()
+
+
+
+
 

@@ -3,6 +3,8 @@ import pandas as pd
 import plotly.express as px
 from streamlit_plotly_events import plotly_events
 import plotly.graph_objects as go
+from datastore import micro_turbo_list, micro_fine_tune_list, companies_by_index
+from day_trade_signal import download_intraday_data
 
 @st.cache_data
 def load_data(uploaded_file):
@@ -43,34 +45,6 @@ def plot_price(data, ticker_symbol):
 
     # Ensure the last data point is included in the x-axis
     index_to_date[counter - 1] = list(date_counts.keys())[-1]
-
-    # # Reduce the number of x-axis labels to avoid overlap
-    # step = max(1, len(index_to_date) // 10)  # Show only 10 labels max
-    # tickvals = sorted(set(list(index_to_date.keys())[::step] + [counter - 1]))  # Ensure last date is included
-    # ticktext = [str(index_to_date[val]) for val in tickvals]
-    #
-    # # Plot using numerical index
-    # fig = px.line(
-    #     data,
-    #     x=range(len(data)),  # Use numerical index instead of date
-    #     y=ticker_symbol,
-    #     markers=True,
-    #     title=f"Historical Price of {ticker_symbol}"
-    # )
-    # fig.update_traces(
-    #     line=dict(color='orange', width=2),
-    #     marker=dict(size=6, color='orangered', line=dict(width=1, color='black'))
-    # )
-    #
-    # # Customize x-axis labels to prevent overlapping
-    # fig.update_layout(
-    #     xaxis=dict(
-    #         tickmode='array',
-    #         tickvals=tickvals,
-    #         ticktext=ticktext,
-    #         tickangle=45
-    #     )
-    # )
 
     step = max(1, len(data) // 10)  # Show only 10 labels max
     xticks = data.index[::step]
@@ -194,6 +168,31 @@ def fibonacci_visualization():
 
     uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
 
+    intraday_days = 20
+    intraday_interval = "30m"
+
+    companies_by_index_in_use = companies_by_index.copy()
+
+    # Dropdown to select index
+    selected_index = st.selectbox("Select Index", list(companies_by_index_in_use.keys()), key="index_page2")
+
+    # Get the tickers for the selected index
+    tickers = list(companies_by_index_in_use[selected_index].values())
+
+    # Dropdown to select a single stock for intraday data
+    selected_stock = st.selectbox("Select a Stock for Intraday Data", tickers, key="stock_page2")
+
+
+        # Initial data download
+    intraday_data = download_intraday_data(selected_stock, intraday_days, intraday_interval)
+
+    if intraday_data is not None and "Date" in intraday_data.columns and selected_stock in intraday_data.columns:
+        intraday_data = intraday_data[["Date", selected_stock]]
+        intraday_data['Date'] = pd.to_datetime(intraday_data['Date'])
+        intraday_data.set_index('Date', inplace=True)
+    else:
+        st.error("CSV must contain 'Date' and ticker symbol columns.")
+
     if uploaded_file is not None:
         data = load_data(uploaded_file)
         if data is not None and "Date" in data.columns:
@@ -209,3 +208,15 @@ def fibonacci_visualization():
                 plot_price(data_no_gaps, ticker_symbol)
         else:
             st.error("CSV must contain a 'Date' column and at least one stock price column.")
+    else:
+        if intraday_data.empty:
+            st.error("No data found for the given ticker and period.")
+        else:
+            # Remove weekends
+            intraday_data = remove_weekends(intraday_data)
+            data_no_gaps = remove_gaps(intraday_data)
+            plot_price(data_no_gaps, selected_stock)
+
+
+
+        
