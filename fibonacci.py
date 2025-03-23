@@ -160,6 +160,64 @@ def plot_price(data, ticker_symbol):
             st.session_state.clicked_points = []
 
 # Function to render the Streamlit page
+# def fibonacci_visualization():
+#     st.title("Fibonacci Retracement")
+
+#     if 'clicked_points' not in st.session_state:
+#         st.session_state.clicked_points = []
+
+#     uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
+
+#     intraday_days = 20
+#     intraday_interval = "30m"
+
+#     companies_by_index_in_use = companies_by_index.copy()
+
+#     # Dropdown to select index
+#     selected_index = st.selectbox("Select Index", list(companies_by_index_in_use.keys()), key="index_page2")
+
+#     # Get the tickers for the selected index
+#     tickers = list(companies_by_index_in_use[selected_index].values())
+
+#     # Dropdown to select a single stock for intraday data
+#     selected_stock = st.selectbox("Select a Stock for Intraday Data", tickers, key="stock_page2")
+
+
+#         # Initial data download
+#     intraday_data = download_intraday_data(selected_stock, intraday_days, intraday_interval)
+
+#     if intraday_data is not None and "Date" in intraday_data.columns and selected_stock in intraday_data.columns:
+#         intraday_data = intraday_data[["Date", selected_stock]]
+#         intraday_data['Date'] = pd.to_datetime(intraday_data['Date'])
+#         intraday_data.set_index('Date', inplace=True)
+#     else:
+#         st.error("CSV must contain 'Date' and ticker symbol columns.")
+
+#     if uploaded_file is not None:
+#         data = load_data(uploaded_file)
+#         if data is not None and "Date" in data.columns:
+#             ticker_symbol = data.columns[2]  # Auto-detect the ticker symbol
+#             data = data[["Date", ticker_symbol]]
+#             data['Date'] = pd.to_datetime(data['Date'])
+#             data.set_index('Date', inplace=True)
+
+#             if data.empty:
+#                 st.error("No data found for the given ticker and period.")
+#             else:
+#                 data_no_gaps = remove_gaps(remove_weekends(data))
+#                 plot_price(data_no_gaps, ticker_symbol)
+#         else:
+#             st.error("CSV must contain a 'Date' column and at least one stock price column.")
+#     else:
+#         if intraday_data.empty:
+#             st.error("No data found for the given ticker and period.")
+#         else:
+#             # Remove weekends
+#             intraday_data = remove_weekends(intraday_data)
+#             data_no_gaps = remove_gaps(intraday_data)
+#             plot_price(data_no_gaps, selected_stock)
+
+
 def fibonacci_visualization():
     st.title("Fibonacci Retracement")
 
@@ -168,7 +226,9 @@ def fibonacci_visualization():
 
     uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
 
-    intraday_days = 20
+    # Add a slider to allow users to choose the number of days (default 5, range 5-30)
+    intraday_days = st.slider("Select number of days for intraday data", min_value=5, max_value=30, value=5, step=1)
+    
     intraday_interval = "30m"
 
     companies_by_index_in_use = companies_by_index.copy()
@@ -182,8 +242,7 @@ def fibonacci_visualization():
     # Dropdown to select a single stock for intraday data
     selected_stock = st.selectbox("Select a Stock for Intraday Data", tickers, key="stock_page2")
 
-
-        # Initial data download
+    # Download intraday data with user-defined number of days
     intraday_data = download_intraday_data(selected_stock, intraday_days, intraday_interval)
 
     if intraday_data is not None and "Date" in intraday_data.columns and selected_stock in intraday_data.columns:
@@ -216,7 +275,5 @@ def fibonacci_visualization():
             intraday_data = remove_weekends(intraday_data)
             data_no_gaps = remove_gaps(intraday_data)
             plot_price(data_no_gaps, selected_stock)
-
-
 
         
