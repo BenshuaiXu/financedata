@@ -42,11 +42,15 @@ def get_latest_price(ticker):
     return None
 
 
-def update_data(data, latest_price, ticker_symbol):
+def update_data(data, latest_price, ticker_symbol, intraday_interval):
     """
     Update the historical data by appending the latest price and removing the oldest price.
     """
-    latest_date = data.index[-1] + pd.Timedelta(minutes=30)
+    set_interval = 30
+
+    if intraday_interval == "15m":
+        set_interval = 15
+    latest_date = data.index[-1] + pd.Timedelta(minutes=set_interval)
     new_row = pd.DataFrame({ticker_symbol: [latest_price]}, index=[latest_date])
     updated_data = pd.concat([data.iloc[1:], new_row])
     return updated_data
@@ -68,8 +72,8 @@ def run_analysis(data, ticker_symbol, micro_turbo, micro_fine_tune, micro_date_b
 
 
 def wave_trading():
-    intraday_days = 20
-    intraday_interval = "30m"
+    # intraday_days = 20
+    # intraday_interval = "30m"
 
     companies_by_index_in_use = companies_by_index.copy()
 
@@ -83,6 +87,12 @@ def wave_trading():
     selected_stock = st.selectbox("Select a Stock for Intraday Data", tickers, key="stock_page2")
 
     with st.expander("Micro Adjust Settings "):
+        # New inputs for intraday data: number of days and interval
+        intraday_days = st.number_input("Select number of days for intraday data", min_value=1, max_value=30, value=20,
+                                    step=1)
+        intraday_interval = st.selectbox("Select intraday interval", options=[ "5m", "15m", "30m", "60m"],
+                                     index=1)  # Default "15m"
+
         micro_turbo = st.slider(
             "Micro Turbo",  # Label for the slider
             min_value=1,  # Minimum value
@@ -147,7 +157,7 @@ def wave_trading():
                     st.write(intraday_data.head())
                     st.write(intraday_data.tail())
 
-                    intraday_data = update_data(intraday_data, latest_price, selected_stock)
+                    intraday_data = update_data(intraday_data, latest_price, selected_stock, intraday_interval)
                     st.write(intraday_data.head())
                     st.write(intraday_data.tail())
 
