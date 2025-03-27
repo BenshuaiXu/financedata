@@ -88,7 +88,7 @@ def wave_trading():
 
     with st.expander("Micro Adjust Settings "):
         # New inputs for intraday data: number of days and interval
-        intraday_days = st.number_input("Select number of days for intraday data", min_value=1, max_value=30, value=20,
+        intraday_days = st.number_input("Select number of days for intraday data", min_value=1, max_value=30, value=15,
                                     step=1)
         intraday_interval = st.selectbox("Select intraday interval", options=[ "5m", "15m", "30m", "60m"],
                                      index=1)  # Default "15m"
