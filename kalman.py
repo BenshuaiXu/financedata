@@ -218,37 +218,6 @@ def micro_stock_price_filtering_fourier_withlinear(ticker_df, company_name, meas
     log_return_velocities = np.array(log_return_velocities)
     log_return_accelerations = np.array(log_return_accelerations)
 
-    # # Extend data for plotting
-    # original_price = ticker_df.iloc[1:, 0]
-    # filtered_price_adjusted = ticker_df['filtered_price'].iloc[1:]
-
-    # if not pd.api.types.is_datetime64_any_dtype(ticker_df["DateTime"]):
-    #     ticker_df["DateTime"] = pd.to_datetime(ticker_df["DateTime"], errors="coerce")
-
-    # # Format datetime as string for x-axis labels
-    # ticker_df["FormattedTime"] = ticker_df["DateTime"].dt.strftime('%Y-%m-%d %H:%M')
-
-    # # Extract correct_dates (excluding the first row)
-    # correct_dates = ticker_df["FormattedTime"].iloc[1:]
-    # # Get the last value of correct_dates (a formatted datetime string)
-    # last_date_str = correct_dates.iloc[-1]
-    # # Convert the last date string to a datetime object
-    # last_date = pd.to_datetime(last_date_str)
-    # # Calculate the next day
-    # next_day = last_date + pd.Timedelta(days=1)
-    # # Format the next day as a string (if needed)
-    # next_day_str = next_day.strftime('%Y-%m-%d %H:%M')
-
-    # extended_correct_dates = ticker_df["FormattedTime"].iloc[1:]
-
-    # extended_dates = filtered_price_adjusted.index.append(
-    #     pd.to_datetime([filtered_price_adjusted.index[-1] + pd.Timedelta(days=1)]))
-    # extended_original_price = original_price.append(
-    #     pd.Series([np.nan], index=[extended_dates[-1]]))
-    # extended_filtered_price = filtered_price_adjusted.append(
-    #     pd.Series([filtered_price_adjusted.iloc[-1]], index=[extended_dates[-1]]))
-    # extended_correct_date = correct_dates.append(
-    #     pd.Series([next_day_str], index=[extended_dates[-1]]))
 
     # Extend data for plotting
     original_price = ticker_df.iloc[1:, 0]
@@ -336,8 +305,8 @@ def micro_stock_price_filtering_fourier_withlinear(ticker_df, company_name, meas
 
         # Calculate the 20th and 80th percentiles along the regression line
         residuals = y - y_pred
-        lower_percentile = np.percentile(residuals, 20)
-        upper_percentile = np.percentile(residuals, 80)
+        lower_percentile = np.percentile(residuals, 5)
+        upper_percentile = np.percentile(residuals, 90)
 
     backdate = -backdate
     # Plot using the numeric index for x-axis
@@ -356,7 +325,7 @@ def micro_stock_price_filtering_fourier_withlinear(ticker_df, company_name, meas
         ax1.fill_between(plot_df_cleaned['Numeric_Index'][backdate:],
                          y_pred[backdate:] + lower_percentile,
                          y_pred[backdate:] + upper_percentile,
-                         color='lightblue', alpha=0.3, label='20th-80th Percentile')
+                         color='lightblue', alpha=0.3, label='10th-90th Percentile')
 
         # Get the latest date and corresponding regression value
         latest_index = plot_df_cleaned['Numeric_Index'].iloc[-1]
@@ -434,10 +403,6 @@ def micro_stock_price_filtering_fourier_withlinear(ticker_df, company_name, meas
     xticks = plot_df['Numeric_Index'][backdate:][::step]
     xtick_labels = plot_df['correct_dates'].iloc[backdate:][::step]
 
-    # if plot_df['Numeric_Index'].iloc[-1] not in xticks.values:
-    #     xticks = pd.concat([xticks, pd.Series([plot_df['Numeric_Index'].iloc[-1]])], ignore_index=True)
-    #     xtick_labels = pd.concat([pd.Series(xtick_labels), pd.Series([plot_df['correct_dates'].iloc[-1]])],
-    #                              ignore_index=True)
 
     ax1.set_xticks(xticks)
     ax1.set_xticklabels(xtick_labels, rotation=45, ha='right')  # Rotate 45 degrees and align to the right

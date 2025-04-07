@@ -56,7 +56,7 @@ def update_data(data, latest_price, ticker_symbol, intraday_interval):
     return updated_data
 
 
-def run_analysis(data, ticker_symbol, micro_turbo, micro_fine_tune, micro_date_back):
+def run_analysis_original(data, ticker_symbol, micro_turbo, micro_fine_tune, micro_date_back):
     """
     Run the analysis on the given data.
     """
@@ -71,9 +71,23 @@ def run_analysis(data, ticker_symbol, micro_turbo, micro_fine_tune, micro_date_b
                                                    backdate=micro_date_back_to_data_points)
 
 
+
+
+def run_analysis(data, ticker_symbol, micro_turbo, micro_fine_tune, micro_date_back, old_data):
+    """
+    Run the analysis on the given data.
+    """
+    data_no_gaps = remove_gaps(data)
+
+    micro_date_back_to_data_points = micro_date_back * 16
+    micro_top_frequencies = 60 + (5 - micro_turbo) * 10 - micro_fine_tune + 1
+    micro_fourier_transformed_ticker_df = micro_frequency_domain_filtering(data_no_gaps,
+                                                                           top_frequencies=micro_top_frequencies)
+    micro_stock_price_filtering_fourier_withlinear(micro_fourier_transformed_ticker_df,
+                                                   company_name=ticker_symbol,
+                                                   backdate=micro_date_back_to_data_points)
+
 def wave_trading():
-    # intraday_days = 20
-    # intraday_interval = "30m"
 
     companies_by_index_in_use = companies_by_index.copy()
 
@@ -138,7 +152,7 @@ def wave_trading():
 
             # Initial analysis            
             with analysis_placeholder:
-                run_analysis(intraday_data, selected_stock, micro_turbo, micro_fine_tune, micro_date_back)                
+                run_analysis_original(intraday_data, selected_stock, micro_turbo, micro_fine_tune, micro_date_back)                
 
             # Loop to update data and re-run analysis every 30 minutes
             while True:
@@ -154,16 +168,18 @@ def wave_trading():
 
                 latest_price = get_latest_price(selected_stock)
                 if latest_price is not None:
-                    st.write(intraday_data.head())
-                    st.write(intraday_data.tail())
+                    # st.write(intraday_data.head())
+                    # st.write(intraday_data.tail())
+
+                    old_data = intraday_data.copy()
 
                     intraday_data = update_data(intraday_data, latest_price, selected_stock, intraday_interval)
-                    st.write(intraday_data.head())
-                    st.write(intraday_data.tail())
+                    # st.write(intraday_data.head())
+                    # st.write(intraday_data.tail())
 
                     with analysis_placeholder:
                         st.empty()  # Clear previous output
-                        run_analysis(intraday_data, selected_stock, micro_turbo, micro_fine_tune, micro_date_back)
+                        run_analysis(intraday_data, selected_stock, micro_turbo, micro_fine_tune, micro_date_back, old_data)
 
                 else:
                     st.error("Failed to fetch the latest price.")
