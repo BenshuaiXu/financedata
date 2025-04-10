@@ -102,10 +102,10 @@ def wave_trading():
 
     with st.expander("Micro Adjust Settings "):
         # New inputs for intraday data: number of days and interval
-        intraday_days = st.number_input("Select number of days for intraday data", min_value=1, max_value=30, value=15,
+        intraday_days = st.number_input("Select number of days for intraday data", min_value=1, max_value=30, value=10,
                                     step=1)
-        intraday_interval = st.selectbox("Select intraday interval", options=[ "5m", "15m", "30m", "60m"],
-                                     index=1)  # Default "15m"
+        intraday_interval = st.selectbox("Select intraday interval", options=[ "5m", "10m", "15m", "30m", "60m"],
+                                     index=2)  # Default "15m"
 
         micro_turbo = st.slider(
             "Micro Turbo",  # Label for the slider
@@ -146,6 +146,7 @@ def wave_trading():
         else:
             # Remove weekends
             intraday_data = remove_weekends(intraday_data)
+            old_data = intraday_data.copy()
 
             # Create a placeholder to clear previous results
             analysis_placeholder = st.empty()     
@@ -168,14 +169,8 @@ def wave_trading():
 
                 latest_price = get_latest_price(selected_stock)
                 if latest_price is not None:
-                    # st.write(intraday_data.head())
-                    # st.write(intraday_data.tail())
-
-                    old_data = intraday_data.copy()
 
                     intraday_data = update_data(intraday_data, latest_price, selected_stock, intraday_interval)
-                    # st.write(intraday_data.head())
-                    # st.write(intraday_data.tail())
 
                     with analysis_placeholder:
                         st.empty()  # Clear previous output
