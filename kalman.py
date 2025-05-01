@@ -427,7 +427,7 @@ def remove_gaps(data):
     data_no_gaps["DateTime"] = data_no_gaps.index
     # grouped = data_no_gaps.groupby(data_no_gaps.index.date)
     # Create a new index without time gaps
-    new_index = pd.date_range(start=data_no_gaps.index[0].date(), periods=len(data_no_gaps), freq='15T')
+    new_index = pd.date_range(start=data_no_gaps.index[0].date(), periods=len(data_no_gaps), freq='15min')
     # Reindex the data with the new continuous index
     data_no_gaps.index = new_index
 
