@@ -1,4 +1,4 @@
-yfinance==0.2.57
+yfinance==0.2.59
 numpy==2.2.0
 streamlit==1.42.1
 matplotlib==3.9.3

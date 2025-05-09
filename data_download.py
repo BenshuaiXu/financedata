@@ -21,15 +21,29 @@ def clean_data(data):
     return data
 
 
+def safe_download(ticker, num_of_days):
+    while True:
+        try:
+            return yf.download(ticker, period=num_of_days)
+        except yf.shared._exceptions.YFRateLimitError:
+            print("Rate limited. Waiting 60 seconds...")
+            time.sleep(60)
+
+
 # Function to download historical data for a list of tickers
-def download_historical_data(tickers, years):
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=years * 365)
+def download_historical_data(tickers, days):
+    # end_date = datetime.now()
+    # start_date = end_date - timedelta(days=years * 365)
 
     data = pd.DataFrame()
+    # number_of_days = str(days)+"d"
+    slected_num_of_days = f"{days}d"
+
 
     for ticker in tickers:
-        stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False)
+        # stock_data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False)
+        stock_data = safe_download(ticker, num_of_days=slected_num_of_days)
+
         if not stock_data.empty:  # Only add data if it's not empty
             stock_data = stock_data[['Close']].round(2)  # Keep only 'Close' price and round to 2 decimal places
             stock_data.columns = [ticker]  # Rename the column to the ticker symbol
@@ -91,7 +105,7 @@ def finance_data_download():
     selected_stock_1 = st.selectbox("Select a Stock for Intraday Data", tickers, key="stock_page1")
 
     # Slider to select number of years for historical data
-    years = st.slider("Select number of years", min_value=1, max_value=6, value=6)
+    days = st.slider("Select number of days", min_value=1, max_value=6, value=4)
 
     # New inputs for intraday data: number of days and interval
     intraday_days = st.number_input("Select number of days for intraday data", min_value=1, max_value=30, value=20,
@@ -102,7 +116,7 @@ def finance_data_download():
     # Download historical data
     if st.button("Download Historical Data"):
         with st.spinner("Downloading historical data..."):
-            historical_data = download_historical_data(tickers, years)
+            historical_data = download_historical_data(tickers, days)
             if not historical_data.empty:
                 historical_data.to_csv(f"{selected_index_1}_historical_data.csv")
                 st.success("Historical data downloaded and cleaned successfully!")
