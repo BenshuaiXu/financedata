@@ -105,7 +105,7 @@ def finance_data_download():
     selected_stock_1 = st.selectbox("Select a Stock for Intraday Data", tickers, key="stock_page1")
 
     # Slider to select number of years for historical data
-    days = st.slider("Select number of days", min_value=1, max_value=6, value=4)
+    days = st.slider("Select number of days", min_value=1, max_value=90, value=4)
 
     # New inputs for intraday data: number of days and interval
     intraday_days = st.number_input("Select number of days for intraday data", min_value=1, max_value=30, value=20,
